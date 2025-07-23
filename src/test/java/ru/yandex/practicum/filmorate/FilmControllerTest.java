@@ -203,9 +203,7 @@ class FilmControllerTest {
         assertTrue(hasError);
     }
 
-    private String longString () {
-
-        return "a".repeat(201);
+    private String longString() {return "a".repeat(201);
     }
 
 }
