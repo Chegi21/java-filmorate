@@ -28,7 +28,7 @@ public class FilmController {
 
         Collection<Film> films = filmMap.values();
         if (films.isEmpty()) {
-            log.error("Список фильмов пустой");
+            log.warn("Список фильмов пустой");
             throw new ValidationException("Список фильмов пустой");
         }
 
@@ -38,10 +38,10 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        log.info("Запрос на создание фильма: {}", film);
+        log.info("Запрос на создание фильма {} с id = {}", film.getName(), film.getId());
 
         if (film.getReleaseDate().isBefore(MIN_DATE_RELEASE)) {
-            log.error("Попытка создать фильм с недопустимой датой релиза: {}", film.getReleaseDate());
+            log.warn("Попытка создать фильм с недопустимой датой релиза: {}", film.getReleaseDate());
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 
@@ -54,26 +54,26 @@ public class FilmController {
                 .build();
 
         filmMap.put(newFilm.getId(), newFilm);
-        log.info("Фильм успешно создан: {}", newFilm);
+        log.info("Фильм {} с id = {} успешно создан", newFilm.getName(), newFilm.getId());
         return newFilm;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
-        log.info("Запрос на обновление фильма: {}", newFilm);
+        log.info("Запрос на обновление фильма: {}", newFilm.getId());
 
         if (newFilm.getId() == null) {
-            log.error("Ошибка валидации: передан null в качестве ID");
+            log.warn("Ошибка валидации: передан null в качестве ID");
             throw new ValidationException("Ошибка валидации: передан null в качестве ID");
         }
 
         Film oldFilm = filmMap.get(newFilm.getId());
         if (oldFilm == null) {
-            log.error("Фильм с id={} не найден", newFilm.getId());
+            log.warn("Фильм с id={} не найден", newFilm.getId());
             throw new NotFoundException("Фильм не найден");
         }
         if (newFilm.getReleaseDate().isBefore(MIN_DATE_RELEASE)) {
-            log.error("Попытка обновить фильм с недопустимой датой релиза: {}", newFilm.getReleaseDate());
+            log.warn("Попытка обновить фильм с недопустимой датой релиза: {}", newFilm.getReleaseDate());
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 

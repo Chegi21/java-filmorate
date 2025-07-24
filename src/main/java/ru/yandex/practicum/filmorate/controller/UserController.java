@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -23,17 +24,17 @@ public class UserController {
         log.info("Получен запрос на получение всех пользователей");
 
         if (users.isEmpty()) {
-            log.error("Список пользователей пустой");
+            log.warn("Список пользователей пустой");
             throw new ValidationException("Список пользователей пустой");
         }
 
-        log.debug("Найдено {} пользователей", users.size());
+        log.info("Найдено {} пользователей", users.size());
         return usersMap.values();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        log.info("Получен запрос на создание пользователя: {}", user);
+        log.info("Получен запрос на создание пользователя: {}", user.getLogin());
 
         User newUser = User.builder()
                 .id(getNextId())
@@ -44,22 +45,22 @@ public class UserController {
                 .build();
 
         usersMap.put(newUser.getId(), newUser);
-        log.info("Пользователь успешно создан: {}", newUser);
+        log.info("Пользователь успешно создан: {}", newUser.getLogin());
         return newUser;
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
-        log.info("Получен запрос на обновление пользователя: {}", newUser);
+        log.info("Получен запрос на обновление пользователя: {}", newUser.getLogin());
 
         if (newUser.getId() == null) {
-            log.error("Ошибка валидации: передан null в качестве ID");
+            log.warn("Ошибка валидации: передан null в качестве ID");
             throw new ValidationException("Ошибка валидации: передан null в качестве ID");
         }
 
         User oldUser = usersMap.get(newUser.getId());
         if (oldUser == null) {
-            log.error("Пользователь с ID {} не найден", newUser.getId());
+            log.warn("Пользователь с ID {} не найден", newUser.getId());
             throw new NotFoundException("Пользователь не найден");
         }
 
@@ -67,7 +68,7 @@ public class UserController {
         if (!newEmail.equals(oldUser.getEmail())) {
             log.debug("Изменение email: {} → {}", oldUser.getEmail(), newEmail);
             if (emailExists(newEmail)) {
-                log.error("Email {} уже используется", newEmail);
+                log.warn("Email {} уже используется", newEmail);
                 throw new ValidationException("Эта почта уже используется");
             }
             oldUser.setEmail(newEmail);
@@ -78,7 +79,7 @@ public class UserController {
         oldUser.setBirthday(newUser.getBirthday());
 
         usersMap.put(oldUser.getId(), oldUser);
-        log.info("Пользователь успешно обновлён: {}", oldUser);
+        log.info("Пользователь успешно обновлён: {}", oldUser.getLogin());
         return oldUser;
     }
 
@@ -92,7 +93,7 @@ public class UserController {
     }
 
     private String nameUser(String name, String login) {
-        if (name == null || name.isBlank()) {
+        if (StringUtils.isBlank(name)) {
             log.debug("Имя пользователя пустое, используется login: {}", login);
             return login;
         }

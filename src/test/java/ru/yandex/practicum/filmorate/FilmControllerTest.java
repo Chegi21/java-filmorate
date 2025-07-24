@@ -92,7 +92,7 @@ class FilmControllerTest {
         assertFalse(violations.isEmpty());
 
         boolean hasError = violations.stream()
-                .anyMatch(v -> v.getMessage().contains("null"));
+                .anyMatch(v -> v.getMessage().contains("пустым"));
         assertTrue(hasError);
     }
 
@@ -128,7 +128,7 @@ class FilmControllerTest {
         assertFalse(violations.isEmpty());
 
         boolean hasError = violations.stream()
-                .anyMatch(v -> v.getMessage().contains("null"));
+                .anyMatch(v -> v.getMessage().contains("пустым"));
         assertTrue(hasError);
     }
 

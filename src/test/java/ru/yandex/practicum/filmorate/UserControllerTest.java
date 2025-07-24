@@ -79,10 +79,10 @@ class UserControllerTest {
     }
 
     @Test
-    void testEmailIsNull() {
+    void testEmailIsBlank() {
         User user = User.builder()
                 .id(1L)
-                .email(null)
+                .email(" ")
                 .login("login")
                 .name("name")
                 .birthday(LocalDate.of(1980,1,1))
@@ -92,15 +92,15 @@ class UserControllerTest {
         assertFalse(violations.isEmpty());
 
         boolean hasError = violations.stream()
-                .anyMatch(v -> v.getMessage().contains("null"));
+                .anyMatch(v -> v.getMessage().contains("пустой"));
         assertTrue(hasError);
     }
 
     @Test
-    void testEmailIsBlank() {
+    void testEmailIsNull() {
         User user = User.builder()
                 .id(1L)
-                .email(" ")
+                .email(null)
                 .login("login")
                 .name("name")
                 .birthday(LocalDate.of(1980,1,1))
@@ -164,7 +164,7 @@ class UserControllerTest {
         assertFalse(violations.isEmpty());
 
         boolean hasError = violations.stream()
-                .anyMatch(v -> v.getMessage().contains("null"));
+                .anyMatch(v -> v.getMessage().contains("пустым"));
         assertTrue(hasError);
     }
 

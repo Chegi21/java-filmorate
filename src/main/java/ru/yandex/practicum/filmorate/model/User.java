@@ -12,12 +12,10 @@ public class User {
     @PositiveOrZero(message = "Id не может отрицательным числом")
     private Long id;
 
-    @NotNull(message = "Электронная почта не может быть null")
     @NotBlank(message = "Электронная почта не может быть пустой")
     @Email(message = "Электронная почта должна содержать символ '@'")
     private String email;
 
-    @NotNull(message = "Логин не может быть null")
     @NotBlank(message = "Логин не может быть пустым")
     @Pattern(regexp = "^\\S*$", message = "Логин не должен содержать пробелов")
     private String login;
