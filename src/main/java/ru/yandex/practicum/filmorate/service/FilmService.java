@@ -175,7 +175,16 @@ public class FilmService {
         log.info("Получен запрос от пользователя с id = {} удалить лайк фильму с id = {}", userId, filmId);
 
         Film film = filmStorage.getFilmById(filmId);
+        if (film == null) {
+            log.warn("Фильм с id = {} не найден", filmId);
+            throw new NotFoundException("Фильм не найден");
+        }
+
         User user = userStorage.getUserById(userId);
+        if (user == null) {
+            log.warn("Пользователь по данному id = {} не найден", userId);
+            throw new NotFoundException("Пользователь не найден");
+        }
 
         if (!film.getLikes().contains(user.getId())) {
             log.warn("Лайк от пользователя с id = {} не найден", userId);
