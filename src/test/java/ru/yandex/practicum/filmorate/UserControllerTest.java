@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -21,12 +21,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
     private static Validator validator;
-    private final UserStorage userStorage = new InMemoryUserStorage();
+    private static UserController controller;
 
-    @BeforeAll
-    static void setUpValidator() {
+
+    @BeforeEach
+    void setUpValidator() {
         ValidatorFactory factory = buildDefaultValidatorFactory();
         validator = factory.getValidator();
+        UserStorage userStorage = new InMemoryUserStorage();
+        UserService userService = new UserService(userStorage);
+        controller = new UserController(userService);
     }
 
     @Test
@@ -44,9 +48,6 @@ class UserControllerTest {
 
     @Test
     void testIdIsNull() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user = createValidUser();
         user.setId(null);
 
@@ -136,9 +137,6 @@ class UserControllerTest {
 
     @Test
     void testNameIsLogin() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user = createValidUser();
         user.setName(" ");
 
@@ -174,9 +172,6 @@ class UserControllerTest {
 
     @Test
     void testFindAllUsers() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user1 = createValidUser();
         User user2 = createValidUser();
         User user3 = createValidUser();
@@ -189,9 +184,6 @@ class UserControllerTest {
 
     @Test
     void testNotFindAllUsers() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         Collection<User> userCollection = controller.findAll();
 
         assertTrue(userCollection.isEmpty());
@@ -199,9 +191,6 @@ class UserControllerTest {
 
     @Test
     void testFindUserById() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user = createValidUser();
         assertDoesNotThrow(() -> controller.create(user));
 
@@ -215,9 +204,6 @@ class UserControllerTest {
 
     @Test
     void testNotFindUserById() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user = createValidUser();
         assertDoesNotThrow(() -> controller.create(user));
 
@@ -229,9 +215,6 @@ class UserControllerTest {
 
     @Test
     void testAddAndDeleteUser() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user = createValidUser();
 
         assertDoesNotThrow(() -> controller.create(user));
@@ -242,9 +225,6 @@ class UserControllerTest {
 
     @Test
     void testAddDeleteAndGetFriends() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user1 = createValidUser();
         User user2 = createValidUser();
 
@@ -265,9 +245,6 @@ class UserControllerTest {
 
     @Test
     void testGetCommonFriends() {
-        UserService userService = new UserService(userStorage);
-        UserController controller = new UserController(userStorage, userService);
-
         User user1 = createValidUser();
         User user2 = createValidUser();
         User user3 = createValidUser();

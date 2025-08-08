@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -25,15 +26,17 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class FilmControllerTest {
     private static Validator validator;
+    private static UserStorage userStorage;
+    private static FilmController controller;
 
-    private final FilmStorage filmStorage = new InMemoryFilmStorage();
-    private final UserStorage userStorage = new InMemoryUserStorage();
-
-    @BeforeAll
-    static void setUpValidator() {
-
+    @BeforeEach
+    void setUpValidator() {
         ValidatorFactory factory = buildDefaultValidatorFactory();
         validator = factory.getValidator();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        userStorage = new InMemoryUserStorage();
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+        controller = new FilmController(filmService);
     }
 
     @Test
@@ -51,16 +54,13 @@ class FilmControllerTest {
 
     @Test
     void testIdIsNull() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film = createdValidFilm();
         film.setId(null);
 
         ValidationException exception = assertThrows(ValidationException.class,
                 () -> controller.update(film));
 
-        assertEquals("Ошибка валидации: передан null в качестве ID", exception.getMessage());
+        assertEquals("Ошибка валидации: передан null в качестве Id", exception.getMessage());
     }
 
     @Test
@@ -117,9 +117,6 @@ class FilmControllerTest {
 
     @Test
     void testReleaseDateBeforeMin() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film = createdValidFilm();
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
 
@@ -170,9 +167,6 @@ class FilmControllerTest {
 
     @Test
     void testFindAllFilms() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film1 = createdValidFilm();
         Film film2 = createdValidFilm();
         Film film3 = createdValidFilm();
@@ -185,9 +179,6 @@ class FilmControllerTest {
 
     @Test
     void testNotFindAllFilms() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Collection<Film> filmCollection = controller.findAll();
 
         assertTrue(filmCollection.isEmpty());
@@ -195,9 +186,6 @@ class FilmControllerTest {
 
     @Test
     void testFindFilmById() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film = createdValidFilm();
         assertDoesNotThrow(() -> controller.create(film));
 
@@ -211,9 +199,6 @@ class FilmControllerTest {
 
     @Test
     void testNotFindFilmById() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film = createdValidFilm();
         assertDoesNotThrow(() -> controller.create(film));
 
@@ -225,9 +210,6 @@ class FilmControllerTest {
 
     @Test
     void testGetListPopularFilm() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film1 = createdValidFilm();
         film1.setName("VeryBest");
 
@@ -265,9 +247,6 @@ class FilmControllerTest {
 
     @Test
     void testAddAndDeleteLike() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film = createdValidFilm();
         User user = createValidUser();
 
@@ -282,9 +261,6 @@ class FilmControllerTest {
 
     @Test
     void testAddAndDeleteFilm() {
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        FilmController controller = new FilmController(filmStorage, filmService);
-
         Film film = createdValidFilm();
 
         assertDoesNotThrow(() -> controller.create(film));
@@ -295,7 +271,6 @@ class FilmControllerTest {
 
     private Film createdValidFilm() {
         return Film.builder()
-                .id(1L)
                 .name("name")
                 .description("description")
                 .releaseDate(LocalDate.of(1895,12,28))
