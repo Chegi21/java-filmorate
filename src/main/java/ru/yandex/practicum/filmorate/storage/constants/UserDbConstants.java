@@ -42,5 +42,5 @@ public class UserDbConstants {
             "SELECT COUNT(*) FROM " + USER_TABLE_NAME + " WHERE " + USER_EMAIL + " = ?";
 
     public static final String LOGIN_EXISTS =
-            "SELECT COUNT(*) FROM " +USER_TABLE_NAME + " WHERE " + USER_LOGIN + " = ?";
+            "SELECT COUNT(*) FROM " + USER_TABLE_NAME + " WHERE " + USER_LOGIN + " = ?";
 }
