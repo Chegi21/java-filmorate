@@ -19,8 +19,6 @@ public interface UserDao {
 
     User delete(User user);
 
-    boolean emailExists(String email);
-
     void addLinkFriends(Long userId, Long friendId);
 
     void deleteLinkFriends(Long userId, Long friendId);
