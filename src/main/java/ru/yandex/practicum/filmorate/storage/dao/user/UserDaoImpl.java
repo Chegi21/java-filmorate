@@ -125,7 +125,23 @@ public class UserDaoImpl implements UserDao {
         jdbcTemplate.update(DELETE_ALL_FRIENDS, userId, userId);
     }
 
+    @Override
+    public boolean emilExists(User user) {
+        Integer count =  jdbcTemplate.queryForObject(EMILE_EXISTS, Integer.class, user.getEmail());
+        return count > 0;
+    }
+
+    @Override
+    public boolean loginExists(User user) {
+        Integer count =  jdbcTemplate.queryForObject(LOGIN_EXISTS, Integer.class, user.getLogin());
+        return count > 0;
+    }
+
+
     private Collection<Long> getFriendsId(Long userId) {
         return jdbcTemplate.queryForList(FIND_FRIENDS_ID, Long.class, userId);
     }
+
+
+
 }

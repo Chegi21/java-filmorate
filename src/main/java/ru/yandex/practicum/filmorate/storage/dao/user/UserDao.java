@@ -25,4 +25,8 @@ public interface UserDao {
 
     void deleteAllFriends(Long userId);
 
+    boolean emilExists(User user);
+
+    boolean loginExists(User user);
+
 }

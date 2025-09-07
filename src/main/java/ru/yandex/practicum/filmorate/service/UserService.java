@@ -11,6 +11,9 @@ import ru.yandex.practicum.filmorate.storage.dao.user.UserDao;
 
 import java.util.*;
 
+import static ru.yandex.practicum.filmorate.storage.constants.UserDbConstants.EMILE_EXISTS;
+import static ru.yandex.practicum.filmorate.storage.constants.UserDbConstants.LOGIN_EXISTS;
+
 @Slf4j
 @Service
 public class UserService  {
@@ -76,6 +79,16 @@ public class UserService  {
 
     public User create(User user) {
         log.info("Запрос на создание пользователя: {}", user.getName());
+
+        if (userDao.emilExists(user)) {
+            log.warn("Email {} уже существует", user.getEmail());
+            throw new ValidationException("Email уже существует");
+        }
+
+        if (userDao.loginExists(user)) {
+            log.warn("Login {} уже существует", user.getEmail());
+            throw new ValidationException("Login уже существует");
+        }
 
         User newUser = User.builder()
                 .email(user.getEmail())

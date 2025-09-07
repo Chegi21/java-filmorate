@@ -74,6 +74,16 @@ public class InMemoryUserDao implements UserDao {
         usersMap.get(userId).getFriends().clear();
     }
 
+    @Override
+    public boolean emilExists(User user) {
+        return false;
+    }
+
+    @Override
+    public boolean loginExists(User user) {
+        return false;
+    }
+
     public boolean emailExists(String email) {
         return usersMap.values().stream().anyMatch(
                 user -> user.getEmail().equalsIgnoreCase(email)
