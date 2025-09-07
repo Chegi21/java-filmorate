@@ -111,12 +111,6 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public boolean emailExists(String email) {
-        Integer count = jdbcTemplate.queryForObject(EMILE_EXISTS, Integer.class, email);
-        return count > 0;
-    }
-
-    @Override
     public void addLinkFriends(Long userId, Long friendId) {
         jdbcTemplate.update(INSERT_FRIENDS, userId, friendId);
     }
