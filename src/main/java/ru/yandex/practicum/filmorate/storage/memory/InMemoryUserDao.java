@@ -1,15 +1,16 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.memory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dao.user.UserDao;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class InMemoryUserStorage implements UserStorage {
+public class InMemoryUserDao implements UserDao {
     private final Map<Long, User> usersMap = new HashMap<>();
 
     @Override
@@ -52,20 +53,25 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User delete(Long id) {
-        return usersMap.remove(id);
+    public User delete(User user) {
+        return usersMap.remove(user.getId());
     }
 
     @Override
-    public void addFriends(Long userId, Long friendId) {
+    public void addLinkFriends(Long userId, Long friendId) {
         usersMap.get(userId).getFriends().add(friendId);
         usersMap.get(friendId).getFriends().add(userId);
     }
 
     @Override
-    public void deleteFriends(Long userId, Long friendId) {
+    public void deleteLinkFriends(Long userId, Long friendId) {
         usersMap.get(userId).getFriends().remove(friendId);
         usersMap.get(friendId).getFriends().remove(userId);
+    }
+
+    @Override
+    public void deleteAllFriends(Long userId) {
+        usersMap.get(userId).getFriends().clear();
     }
 
     public boolean emailExists(String email) {

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 @Data
 @Builder
+@EqualsAndHashCode(of = {"id"})
 public class User {
     @PositiveOrZero(message = "Id не может отрицательным числом")
     private Long id;

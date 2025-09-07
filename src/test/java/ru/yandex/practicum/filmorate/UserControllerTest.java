@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.memory.InMemoryUserDao;
+import ru.yandex.practicum.filmorate.storage.dao.user.UserDao;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -28,8 +28,8 @@ class UserControllerTest {
     void setUpValidator() {
         ValidatorFactory factory = buildDefaultValidatorFactory();
         validator = factory.getValidator();
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserService userService = new UserService(userStorage);
+        UserDao userDao = new InMemoryUserDao();
+        UserService userService = new UserService(userDao);
         controller = new UserController(userService);
     }
 
@@ -207,10 +207,7 @@ class UserControllerTest {
         User user = createValidUser();
         assertDoesNotThrow(() -> controller.create(user));
 
-        NotFoundException exception = assertThrows(
-                NotFoundException.class, () -> controller.getUserById(2L)
-        );
-        assertEquals("Пользователь не найден", exception.getMessage());
+        assertNull(controller.getUserById(2L));
     }
 
     @Test

@@ -11,10 +11,10 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.film.FilmDao;
+import ru.yandex.practicum.filmorate.storage.memory.InMemoryFilmDao;
+import ru.yandex.practicum.filmorate.storage.memory.InMemoryUserDao;
+import ru.yandex.practicum.filmorate.storage.dao.user.UserDao;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -25,16 +25,16 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class FilmControllerTest {
     private static Validator validator;
-    private static UserStorage userStorage;
+    private static UserDao userDao;
     private static FilmController controller;
 
     @BeforeEach
     void setUpValidator() {
         ValidatorFactory factory = buildDefaultValidatorFactory();
         validator = factory.getValidator();
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        userStorage = new InMemoryUserStorage();
-        FilmService filmService = new FilmService(filmStorage, userStorage);
+        FilmDao filmDao = new InMemoryFilmDao();
+        userDao = new InMemoryUserDao();
+        FilmService filmService = new FilmService(filmDao, userDao);
         controller = new FilmController(filmService);
     }
 
@@ -201,10 +201,7 @@ class FilmControllerTest {
         Film film = createdValidFilm();
         assertDoesNotThrow(() -> controller.create(film));
 
-        NotFoundException exception = assertThrows(
-                NotFoundException.class, () -> controller.getFilmById(2L)
-        );
-        assertEquals("Фильм не найден", exception.getMessage());
+        assertNull(controller.getFilmById(2L));
     }
 
     @Test
@@ -220,14 +217,14 @@ class FilmControllerTest {
 
         assertDoesNotThrow(() -> controller.create(film1));
         assertDoesNotThrow(() -> controller.create(film2));
-        assertDoesNotThrow(() -> userStorage.create(user1));
-        assertDoesNotThrow(() -> userStorage.create(user2));
+        assertDoesNotThrow(() -> userDao.create(user1));
+        assertDoesNotThrow(() -> userDao.create(user2));
 
         List<Film> filmList = new ArrayList<>(controller.findAll());
         Film createFilm1 = filmList.get(0);
         Film createFilm2 = filmList.get(1);
 
-        List<User> userList = new ArrayList<>(userStorage.getUsers());
+        List<User> userList = new ArrayList<>(userDao.getUsers());
         User createUser1 = userList.get(0);
         User createUser2 = userList.get(1);
 
@@ -250,12 +247,11 @@ class FilmControllerTest {
         User user = createValidUser();
 
         assertDoesNotThrow(() -> controller.create(film));
-        assertDoesNotThrow(() -> userStorage.create(user));
+        assertDoesNotThrow(() -> userDao.create(user));
         assertDoesNotThrow(() -> controller.addLike(1L, 1L));
-        assertTrue(controller.getFilmById(1L).getLikes().contains(1L));
+        assertTrue(controller.getFilmById(1L).getLikes().size() == 1);
         assertDoesNotThrow(() -> controller.deleteLike(1L, 1L));
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> controller.getPopular(5));
-        assertEquals("Список популярных фильмов пустой", exception.getMessage());
+        assertTrue(controller.getFilmById(1L).getLikes().isEmpty());
     }
 
     @Test
