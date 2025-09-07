@@ -11,9 +11,6 @@ import ru.yandex.practicum.filmorate.storage.dao.user.UserDao;
 
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.storage.constants.UserDbConstants.EMILE_EXISTS;
-import static ru.yandex.practicum.filmorate.storage.constants.UserDbConstants.LOGIN_EXISTS;
-
 @Slf4j
 @Service
 public class UserService  {
