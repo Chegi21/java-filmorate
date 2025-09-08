@@ -125,9 +125,7 @@ public class UserService  {
         if (newUser.getFriends() == null || newUser.getFriends().isEmpty()) {
             updateUser.setFriends(new HashSet<>());
         } else {
-            newUser.getFriends().forEach(friendId -> {
-                userDao.addLinkFriends(updateUser.getId(), friendId);
-            });
+            userDao.addLinkFriends(updateUser.getId(), newUser.getFriends());
             updateUser.setFriends(newUser.getFriends());
         }
 
@@ -161,7 +159,9 @@ public class UserService  {
             log.warn("Добавление в друзья пользователей с одинаковым id не возможно");
             throw new ValidationException("Добавление в друзья пользователей с одинаковым id не возможно");
         }
-        userDao.addLinkFriends(userId, friendId);
+        Set<Long> friendIds = new HashSet<>();
+        friendIds.add(friendId);
+        userDao.addLinkFriends(userId, friendIds);
 
         log.info("Пользователь с id = {} успешно добавлен в друзья к пользователю с id = {}", friendId, userId);
     }

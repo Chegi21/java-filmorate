@@ -12,10 +12,8 @@ import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.storage.constants.FriendDbConstants.*;
 import static ru.yandex.practicum.filmorate.storage.constants.UserDbConstants.*;
@@ -111,8 +109,22 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void addLinkFriends(Long userId, Long friendId) {
-        jdbcTemplate.update(INSERT_FRIENDS, userId, friendId);
+    public void addLinkFriends(Long userId, Set<Long> friendIds) {
+        if (friendIds == null || friendIds.isEmpty()) return;
+
+        String placeholders = friendIds.stream()
+                .map(id -> "(?, ?, false)")
+                .collect(Collectors.joining(","));
+
+        String sql = INSERT_FRIENDS + placeholders;
+
+        List<Long> params = new ArrayList<>();
+        for (Long friendId : friendIds) {
+            params.add(userId);
+            params.add(friendId);
+        }
+
+        jdbcTemplate.update(sql, params.toArray());
     }
 
     @Override

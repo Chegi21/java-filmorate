@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.*;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.storage.constants.FilmDbConstants.*;
 import static ru.yandex.practicum.filmorate.storage.constants.FilmGenreDbConstant.DELETE_FILM_GENRE;
@@ -134,17 +135,30 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public void addLikes(Long filmId, Long userId) {
-        jdbcTemplate.update(INSERT_LIKE, filmId, userId);
+    public void addLinkFilmLikes(Long filmId, List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return;
+
+        String placeholders = userIds.stream()
+                .map(id -> "(?, ?)")
+                .collect(Collectors.joining(","));
+
+        String sql = INSERT_LIKE + placeholders;
+
+        List<Long> params = new ArrayList<>();
+        for (Long userId : userIds) {
+            params.add(filmId);
+            params.add(userId);
+        }
+        jdbcTemplate.update(sql, params.toArray());
     }
 
     @Override
-    public void delAllLikes(Long filmId) {
+    public void delAllLinkFilmLikes(Long filmId) {
         jdbcTemplate.update(DELETE_ALL_LIKE, filmId);
     }
 
     @Override
-    public void delLike(Long filmId, Long userId) {
+    public void delLinkFilmLikes(Long filmId, Long userId) {
         jdbcTemplate.update(DELETE_LIKE, filmId, userId);
     }
 
@@ -154,7 +168,20 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public void addLinkFilmGenres(Long filmId, Long genreId) {
-        jdbcTemplate.update(INSERT_FILM_GENRE, filmId, genreId);
+    public void addLinkFilmGenres(Long filmId, List<Long> genreIds) {
+        if (genreIds == null || genreIds.isEmpty()) return;
+        String placeholders = genreIds.stream()
+                .map(id -> "(?, ?)")
+                .collect(Collectors.joining(","));
+
+        String sql = INSERT_FILM_GENRE + placeholders;
+
+        List<Long> params = new ArrayList<>();
+        for (Long genreId : genreIds) {
+            params.add(filmId);
+            params.add(genreId);
+        }
+
+        jdbcTemplate.update(sql, params.toArray());
     }
 }

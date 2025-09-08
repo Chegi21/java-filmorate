@@ -84,24 +84,26 @@ public class InMemoryFilmDao implements FilmDao {
     }
 
     @Override
-    public void addLikes(Long filmId, Long userId) {
-        Like like = Like.builder().filmId(filmId).userId(userId).build();
-        filmMap.get(filmId).getLikes().add(like);
+    public void addLinkFilmLikes(Long filmId, List<Long> userId) {
+        for (Long aLong : userId) {
+            Like like = Like.builder().filmId(filmId).userId(aLong).build();
+            filmMap.get(filmId).getLikes().add(like);
+        }
     }
 
     @Override
-    public void delAllLikes(Long filmId) {
+    public void delAllLinkFilmLikes(Long filmId) {
 
     }
 
     @Override
-    public void delLike(Long filmId, Long userId) {
+    public void delLinkFilmLikes(Long filmId, Long userId) {
         Like like = Like.builder().filmId(filmId).userId(userId).build();
         filmMap.get(filmId).getLikes().remove(like);
     }
 
     @Override
-    public void addLinkFilmGenres(Long filmId, Long genreId) {
+    public void addLinkFilmGenres(Long filmId, List<Long> listId) {
 
     }
 
