@@ -110,7 +110,8 @@ public class FilmService {
         }
 
         filmSetGenreLikesRating(film);
-        Film createFilm = filmDao.create(newFilm(film));
+
+        Film createFilm = filmDao.create(createNewFilm(film));
         createFilm.setGenres(film.getGenres());
         createFilm.setLikes(film.getLikes());
         addLinkFilmGenresAndLikes(createFilm);
@@ -239,7 +240,7 @@ public class FilmService {
                 .build();
     }
 
-    private Film newFilm(Film film) {
+    private Film createNewFilm(Film film) {
         return Film.builder()
                 .name(film.getName())
                 .description(film.getDescription())
