@@ -57,10 +57,11 @@ public class InMemoryUserDao implements UserDao {
         return usersMap.remove(user.getId());
     }
 
-
     @Override
     public void addLinkFriends(Long userId, Set<Long> friendIds) {
+
     }
+
 
     @Override
     public void deleteLinkFriends(Long userId, Long friendId) {
