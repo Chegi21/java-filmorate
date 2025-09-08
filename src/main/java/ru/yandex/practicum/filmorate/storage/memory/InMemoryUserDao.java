@@ -58,7 +58,7 @@ public class InMemoryUserDao implements UserDao {
     }
 
     @Override
-    public void addLinkFriends(Long userId, Set<Long> friendIds) {
+    public void addLinkFriends(Long userId, Long friendId) {
 
     }
 

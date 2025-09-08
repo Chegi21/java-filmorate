@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dao.user.UserDao;
@@ -111,10 +110,7 @@ public class UserService  {
         }
 
         User oldUser = userDao.getUserById(newUser.getId());
-        if (oldUser == null) {
-            log.warn("Пользователь с ID {} не найден", newUser.getId());
-            throw new NotFoundException("Пользователь с ID " + newUser.getId() + " не найден");
-        }
+        if (oldUser == null) log.warn("Пользователь с ID {} не найден", newUser.getId());
 
         oldUser.setLogin(newUser.getLogin());
         oldUser.setName(nameUser(newUser.getName(), newUser.getLogin()));
@@ -122,15 +118,17 @@ public class UserService  {
         oldUser.setEmail(newUser.getEmail());
 
         User updateUser = userDao.update(oldUser);
-        if (updateUser == null) {
-            log.warn("Ошибка DAO при обновлении пользователя с id = {}", newUser.getId());
-            throw new RuntimeException("Ошибка обновления пользователя");
+        if (updateUser == null) log.warn("Ошибка DAO при обновлении пользователя с id = {}", newUser.getId());
+
+        userDao.deleteAllFriends(oldUser.getId());
+        if (newUser.getFriends() == null || newUser.getFriends().isEmpty()) {
+            updateUser.setFriends(new HashSet<>());
+        } else {
+            newUser.getFriends().forEach(friendId -> {
+                userDao.addLinkFriends(updateUser.getId(), friendId);
+            });
+            updateUser.setFriends(newUser.getFriends());
         }
-
-        Set<Long> newFriendIds = newUser.getFriends() != null ? newUser.getFriends() : new HashSet<>();
-        userDao.addLinkFriends(updateUser.getId(), newFriendIds);
-
-        updateUser.setFriends(newFriendIds);
 
         log.info("Пользователь с id = {} успешно обновлён", updateUser.getId());
         return updateUser;
@@ -162,9 +160,7 @@ public class UserService  {
             log.warn("Добавление в друзья пользователей с одинаковым id не возможно");
             throw new ValidationException("Добавление в друзья пользователей с одинаковым id не возможно");
         }
-        Set<Long> friendIds = new HashSet<>();
-        friendIds.add(friendId);
-        userDao.addLinkFriends(userId, friendIds);
+        userDao.addLinkFriends(userId, friendId);
 
         log.info("Пользователь с id = {} успешно добавлен в друзья к пользователю с id = {}", friendId, userId);
     }

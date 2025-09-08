@@ -44,7 +44,7 @@ public class FriendDbConstants {
                     FRIEND_USER_ID + ", " +
                     FRIEND_FRIEND_ID + ", " +
                     FRIEND_STATUS + ") " +
-                    "VALUES ";
+                    "VALUES (?, ?, false)";
 
     public static final String DELETE_ALL_FRIENDS =
             "DELETE FROM " +

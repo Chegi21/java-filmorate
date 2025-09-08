@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -11,8 +12,10 @@ import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 
 import static ru.yandex.practicum.filmorate.storage.constants.FriendDbConstants.*;
 import static ru.yandex.practicum.filmorate.storage.constants.UserDbConstants.*;
@@ -58,62 +61,58 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User create(User user) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(
-                    INSERT_USER,
-                    Statement.RETURN_GENERATED_KEYS
-            );
-            ps.setString(1, user.getEmail());
-            ps.setString(2, user.getLogin());
-            ps.setString(3, user.getName());
-            ps.setDate(4, Date.valueOf(user.getBirthday()));
-            return ps;
-        }, keyHolder);
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(
+                        INSERT_USER,
+                        Statement.RETURN_GENERATED_KEYS
+                );
+                ps.setString(1, user.getEmail());
+                ps.setString(2, user.getLogin());
+                ps.setString(3, user.getName());
+                ps.setDate(4, Date.valueOf(user.getBirthday()));
+                return ps;
+            }, keyHolder);
 
-        Long generatedId = Objects.requireNonNull(keyHolder.getKey()).longValue();
-        user.setId(generatedId);
+            Long generatedId = Objects.requireNonNull(keyHolder.getKey()).longValue();
+            user.setId(generatedId);
 
-        return user;
+            return user;
+        } catch (DataAccessException ex) {
+            return null;
+        }
     }
 
     @Override
     public User update(User user) {
-        jdbcTemplate.update(
-                UPDATE_USER,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday(),
-                user.getId()
-        );
-        return user;
+        try {
+            jdbcTemplate.update(
+                    UPDATE_USER,
+                    user.getEmail(),
+                    user.getLogin(),
+                    user.getName(),
+                    user.getBirthday(),
+                    user.getId());
+            return user;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
     public User delete(User user) {
-        jdbcTemplate.update(DELETE_USER, user.getId());
-        return user;
+        int row = jdbcTemplate.update(DELETE_USER, user.getId());
+        if (row > 0) {
+            return user;
+        }
+        return null;
     }
 
     @Override
-    public void addLinkFriends(Long userId, Set<Long> friendIds) {
-        if (friendIds == null || friendIds.isEmpty()) return;
-
-        String placeholders = friendIds.stream()
-                .map(id -> "(?, ?, false)")
-                .collect(Collectors.joining(","));
-
-        String sql = INSERT_FRIENDS + placeholders;
-
-        List<Long> params = new ArrayList<>();
-        for (Long friendId : friendIds) {
-            params.add(userId);
-            params.add(friendId);
-        }
-
-        jdbcTemplate.update(sql, params.toArray());
+    public void addLinkFriends(Long userId, Long friendId) {
+        jdbcTemplate.update(INSERT_FRIENDS, userId, friendId);
     }
 
     @Override
