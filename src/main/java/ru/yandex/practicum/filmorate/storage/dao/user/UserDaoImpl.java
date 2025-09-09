@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -60,36 +61,44 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User create(User user) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(
-                    INSERT_USER,
-                    Statement.RETURN_GENERATED_KEYS
-            );
-            ps.setString(1, user.getEmail());
-            ps.setString(2, user.getLogin());
-            ps.setString(3, user.getName());
-            ps.setDate(4, Date.valueOf(user.getBirthday()));
-            return ps;
-        }, keyHolder);
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(
+                        INSERT_USER,
+                        Statement.RETURN_GENERATED_KEYS
+                );
+                ps.setString(1, user.getEmail());
+                ps.setString(2, user.getLogin());
+                ps.setString(3, user.getName());
+                ps.setDate(4, Date.valueOf(user.getBirthday()));
+                return ps;
+            }, keyHolder);
 
-        Long generatedId = Objects.requireNonNull(keyHolder.getKey()).longValue();
-        user.setId(generatedId);
+            Long generatedId = Objects.requireNonNull(keyHolder.getKey()).longValue();
+            user.setId(generatedId);
 
-        return user;
+            return user;
+        } catch (DataAccessException ex) {
+            return null;
+        }
     }
 
     @Override
     public User update(User user) {
-        jdbcTemplate.update(
-                UPDATE_USER,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday(),
-                user.getId());
-        return user;
+        try {
+            jdbcTemplate.update(
+                    UPDATE_USER,
+                    user.getEmail(),
+                    user.getLogin(),
+                    user.getName(),
+                    user.getBirthday(),
+                    user.getId());
+            return user;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override

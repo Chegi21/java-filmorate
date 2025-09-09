@@ -12,7 +12,7 @@ public class FilmGenreDbConstant {
                     FILM_GENRE_TABLE_NAME + " (" +
                     FILM_GENRE_FILM_ID + ", " +
                     FILM_GENRE_GENRE_ID + ") " +
-                    "VALUES ";
+                    "VALUES (?, ?)";
 
     public static final String DELETE_FILM_GENRE =
             "DELETE FROM " + FILM_GENRE_TABLE_NAME + " WHERE " + FILM_GENRE_FILM_ID + " = ?";

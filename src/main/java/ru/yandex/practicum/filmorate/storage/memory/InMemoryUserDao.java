@@ -59,9 +59,9 @@ public class InMemoryUserDao implements UserDao {
 
     @Override
     public void addLinkFriends(Long userId, Long friendId) {
-
+        usersMap.get(userId).getFriends().add(friendId);
+        usersMap.get(friendId).getFriends().add(userId);
     }
-
 
     @Override
     public void deleteLinkFriends(Long userId, Long friendId) {

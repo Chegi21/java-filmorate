@@ -112,6 +112,7 @@ public class UserService  {
         User oldUser = userDao.getUserById(newUser.getId());
         if (oldUser == null) log.warn("Пользователь с ID {} не найден", newUser.getId());
 
+        oldUser.setId(newUser.getId());
         oldUser.setLogin(newUser.getLogin());
         oldUser.setName(nameUser(newUser.getName(), newUser.getLogin()));
         oldUser.setBirthday(newUser.getBirthday());

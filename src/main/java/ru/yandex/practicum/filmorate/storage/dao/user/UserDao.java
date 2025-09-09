@@ -19,7 +19,7 @@ public interface UserDao {
 
     User delete(User user);
 
-    void addLinkFriends(Long userId,  Long friendId);
+    void addLinkFriends(Long userId, Long friendId);
 
     void deleteLinkFriends(Long userId, Long friendId);
 

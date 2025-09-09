@@ -13,9 +13,7 @@ public class GenreDbConstants {
             "SELECT " +
                     GENRE_ID + ", " +
                     GENRE_NAME + " " +
-                    "FROM " +
-                    GENRE_TABLE_NAME + " " +
-                    "ORDER BY " + GENRE_ID + " ASC";
+                    "FROM " + GENRE_TABLE_NAME;
 
     public static final String FIND_GENRE_BY_ID =
             "SELECT " +
