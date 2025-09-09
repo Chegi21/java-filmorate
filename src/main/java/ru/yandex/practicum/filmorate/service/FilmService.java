@@ -108,39 +108,7 @@ public class FilmService {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 
-        if (film.getRatingMpa() == null) {
-            film.setRatingMpa(customRatingMpa());
-        } else {
-            RatingMpa ratingMpa = filmDao.getRatingMpaById(film.getRatingMpa().getId());
-            film.setRatingMpa(ratingMpa);
-        }
-
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            List<Genre> sortedGenres = new ArrayList<>();
-            List<Genre> listAllGenre = filmDao.getGenres().stream().toList();
-
-            for (Genre genre : film.getGenres()) {
-                listAllGenre.stream()
-                        .filter(g -> g.getId().equals(genre.getId()))
-                        .findFirst()
-                        .ifPresentOrElse(
-                                sortedGenres::add,
-                                () -> {
-                                    log.warn("Жанр с id = {} не найден", genre.getId());
-                                    throw new NotFoundException("Жанр не найден");
-                                }
-                        );
-            }
-
-            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
-            film.setGenres(new LinkedHashSet<>(sortedGenres));
-        } else {
-            film.setGenres(new HashSet<>());
-        }
-
-        if (film.getLikes() == null || film.getLikes().isEmpty()) {
-            film.setLikes(new HashSet<>());
-        }
+        setRatingGenresLikes(film);
 
         Film newFilm = Film.builder()
                 .name(film.getName())
@@ -181,28 +149,7 @@ public class FilmService {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 
-        if (newFilm.getRatingMpa() == null) {
-            newFilm.setRatingMpa(customRatingMpa());
-        } else {
-            RatingMpa ratingMpa = filmDao.getRatingMpaById(newFilm.getRatingMpa().getId());
-            newFilm.setRatingMpa(ratingMpa);
-        }
-
-        if (newFilm.getGenres() != null && !newFilm.getGenres().isEmpty()) {
-            List<Genre> sortedGenres = new ArrayList<>();
-            for (Genre genre : newFilm.getGenres()) {
-                Genre findGenre = filmDao.getGenresById(genre.getId());
-                sortedGenres.add(findGenre);
-            }
-            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
-            newFilm.setGenres(new LinkedHashSet<>(sortedGenres));
-        } else {
-            newFilm.setGenres(new HashSet<>());
-        }
-
-        if (newFilm.getLikes() == null || newFilm.getLikes().isEmpty()) {
-            newFilm.setLikes(new HashSet<>());
-        }
+        setRatingGenresLikes(newFilm);
 
         Film oldFilm = filmDao.getFilmById(newFilm.getId());
         oldFilm.setId(newFilm.getId());
@@ -298,6 +245,42 @@ public class FilmService {
                 .id(1L)
                 .name("G")
                 .build();
+    }
+
+    private void setRatingGenresLikes(Film film) {
+        if (film.getRatingMpa() == null) {
+            film.setRatingMpa(customRatingMpa());
+        } else {
+            RatingMpa ratingMpa = filmDao.getRatingMpaById(film.getRatingMpa().getId());
+            film.setRatingMpa(ratingMpa);
+        }
+
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            List<Genre> sortedGenres = new ArrayList<>();
+            List<Genre> listAllGenre = filmDao.getGenres().stream().toList();
+
+            for (Genre genre : film.getGenres()) {
+                listAllGenre.stream()
+                        .filter(g -> g.getId().equals(genre.getId()))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                sortedGenres::add,
+                                () -> {
+                                    log.warn("Жанр с id = {} не найден", genre.getId());
+                                    throw new NotFoundException("Жанр не найден");
+                                }
+                        );
+            }
+
+            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
+            film.setGenres(new LinkedHashSet<>(sortedGenres));
+        } else {
+            film.setGenres(new HashSet<>());
+        }
+
+        if (film.getLikes() == null || film.getLikes().isEmpty()) {
+            film.setLikes(new HashSet<>());
+        }
     }
 }
 

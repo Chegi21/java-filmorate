@@ -126,7 +126,7 @@ public class UserService  {
         } else {
             newUser.getFriends().forEach(friendId -> {
                 userDao.addLinkFriends(updateUser.getId(), friendId);
-            });//??????
+            });
             updateUser.setFriends(newUser.getFriends());
         }
 
