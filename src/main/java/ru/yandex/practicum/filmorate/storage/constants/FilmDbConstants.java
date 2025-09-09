@@ -39,28 +39,6 @@ public class FilmDbConstants {
                     "LEFT JOIN " + LIKES_TABLE_NAME + " l ON f." + FILM_ID + " = l." + FILM_ID + " " +
                     "ORDER BY f." + FILM_ID;
 
-    public static final String FIND_POPULAR_FILM =
-            "SELECT f." + FILM_ID + ", " +
-                    "f." + FILM_NAME + ", " +
-                    "f." + FILM_DESCRIPTION + ", " +
-                    "f." + FILM_DURATION + ", " +
-                    "f." + FILM_RELEASE_DATE + ", " +
-                    "r." + RATING_ID + ", " +
-                    "r." + RATING_NAME + ", " +
-                    "COUNT(DISTINCT l." + LIKES_USER_ID + ") AS likes_count " +
-                    "FROM " + FILM_TABLE_NAME + " f " +
-                    "LEFT JOIN " + LIKES_TABLE_NAME + " l ON f." + FILM_ID + " = l." + LIKES_FILM_ID + " " +
-                    "LEFT JOIN " + RATING_MPA_TABLE_NAME + " r ON f." + FILM_RATING_ID + " = r." + RATING_ID + " " +
-                    "GROUP BY f." + FILM_ID + ", " +
-                    "f." + FILM_NAME + ", " +
-                    "f." + FILM_DESCRIPTION + ", " +
-                    "f." + FILM_DURATION + ", " +
-                    "f." + FILM_RELEASE_DATE + ", " +
-                    "r." + RATING_ID + ", " +
-                    "r." + RATING_NAME + " " +
-                    "ORDER BY likes_count DESC " +
-                    "LIMIT ?";
-
     public static final String FIND_FILM_BY_ID =
             "SELECT f." + FILM_ID + ", " +
                     "f." + FILM_NAME + ", " +
