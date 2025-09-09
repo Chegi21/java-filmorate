@@ -61,44 +61,36 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User create(User user) {
-        try {
-            KeyHolder keyHolder = new GeneratedKeyHolder();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(
-                        INSERT_USER,
-                        Statement.RETURN_GENERATED_KEYS
-                );
-                ps.setString(1, user.getEmail());
-                ps.setString(2, user.getLogin());
-                ps.setString(3, user.getName());
-                ps.setDate(4, Date.valueOf(user.getBirthday()));
-                return ps;
-            }, keyHolder);
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(
+                    INSERT_USER,
+                    Statement.RETURN_GENERATED_KEYS
+            );
+            ps.setString(1, user.getEmail());
+            ps.setString(2, user.getLogin());
+            ps.setString(3, user.getName());
+            ps.setDate(4, Date.valueOf(user.getBirthday()));
+            return ps;
+        }, keyHolder);
 
-            Long generatedId = Objects.requireNonNull(keyHolder.getKey()).longValue();
-            user.setId(generatedId);
+        Long generatedId = Objects.requireNonNull(keyHolder.getKey()).longValue();
+        user.setId(generatedId);
 
-            return user;
-        } catch (DataAccessException ex) {
-            return null;
-        }
+        return user;
     }
 
     @Override
     public User update(User user) {
-        try {
-            jdbcTemplate.update(
-                    UPDATE_USER,
-                    user.getEmail(),
-                    user.getLogin(),
-                    user.getName(),
-                    user.getBirthday(),
-                    user.getId());
-            return user;
-        } catch (Exception e) {
-            return null;
-        }
+        jdbcTemplate.update(
+                UPDATE_USER,
+                user.getEmail(),
+                user.getLogin(),
+                user.getName(),
+                user.getBirthday(),
+                user.getId());
+        return user;
     }
 
     @Override
