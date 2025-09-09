@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface FilmDao {
     Collection<Film> getFilms();
@@ -32,13 +33,13 @@ public interface FilmDao {
 
     boolean isLiked(Long filmId, Long userId);
 
-    void addLikes(Long filmId, Long userId);
+    void addLikes(Long filmId, List<Long> userId);
 
     void delAllLikes(Long filmId);
 
     void delLike(Long filmId, Long userId);
 
-    void addLinkFilmGenres(Long filmId, Long genreId);
+    void addLinkFilmGenres(Long filmId, List<Long> genreId);
 
     void delLinkFilmGenres(Long filmId);
 }

@@ -182,8 +182,21 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public void addLikes(Long filmId, Long userId) {
-        jdbcTemplate.update(INSERT_LIKE, filmId, userId);
+    public void addLikes(Long filmId, List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return;
+
+        String placeholders = userIds.stream()
+                .map(id -> "(?, ?)")
+                .collect(Collectors.joining(","));
+
+        String sql = INSERT_LIKE + placeholders;
+
+        List<Long> params = new ArrayList<>();
+        for (Long userId : userIds) {
+            params.add(filmId);
+            params.add(userId);
+        }
+        jdbcTemplate.update(sql, params.toArray());
     }
 
     @Override
@@ -202,7 +215,20 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public void addLinkFilmGenres(Long filmId, Long genreId) {
-        jdbcTemplate.update(INSERT_FILM_GENRE, filmId, genreId);
+    public void addLinkFilmGenres(Long filmId, List<Long> genreIds) {
+        if (genreIds == null || genreIds.isEmpty()) return;
+        String placeholders = genreIds.stream()
+                .map(id -> "(?, ?)")
+                .collect(Collectors.joining(","));
+
+        String sql = INSERT_FILM_GENRE + placeholders;
+
+        List<Long> params = new ArrayList<>();
+        for (Long genreId : genreIds) {
+            params.add(filmId);
+            params.add(genreId);
+        }
+
+        jdbcTemplate.update(sql, params.toArray());
     }
 }

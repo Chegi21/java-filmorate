@@ -84,10 +84,10 @@ public class InMemoryFilmDao implements FilmDao {
     }
 
     @Override
-    public void addLikes(Long filmId, Long userId) {
-        Like like = Like.builder().filmId(filmId).userId(userId).build();
-        filmMap.get(filmId).getLikes().add(like);
+    public void addLikes(Long filmId, List<Long> userId) {
+
     }
+
 
     @Override
     public void delAllLikes(Long filmId) {
@@ -101,9 +101,10 @@ public class InMemoryFilmDao implements FilmDao {
     }
 
     @Override
-    public void addLinkFilmGenres(Long filmId, Long genreId) {
+    public void addLinkFilmGenres(Long filmId, List<Long> genreId) {
 
     }
+
 
     @Override
     public void delLinkFilmGenres(Long genreId) {

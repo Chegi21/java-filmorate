@@ -24,7 +24,7 @@ public class LikesDbConstants {
                     LIKES_TABLE_NAME + " (" +
                     LIKES_FILM_ID + ", " +
                     LIKES_USER_ID + ") " +
-                    "VALUES (?, ?)";
+                    "VALUES ";
 
     public static final String DELETE_LIKE =
             "DELETE FROM " + LIKES_TABLE_NAME + " WHERE " + LIKES_FILM_ID + " = ? " + "AND " + LIKES_USER_ID + " = ?";
