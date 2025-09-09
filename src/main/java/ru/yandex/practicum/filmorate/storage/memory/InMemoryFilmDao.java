@@ -84,7 +84,7 @@ public class InMemoryFilmDao implements FilmDao {
     }
 
     @Override
-    public void addLikes(Long filmId, List<Long> userId) {
+    public void addLikes(Long filmId, Long userId) {
 
     }
 
@@ -101,7 +101,7 @@ public class InMemoryFilmDao implements FilmDao {
     }
 
     @Override
-    public void addLinkFilmGenres(Long filmId, List<Long> genreId) {
+    public void addLinkFilmGenres(Long filmId, Long genreId) {
 
     }
 

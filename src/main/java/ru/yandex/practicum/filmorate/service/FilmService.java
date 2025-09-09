@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.storage.dao.user.UserDao;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -109,12 +108,50 @@ public class FilmService {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 
-        filmSetGenreLikesRating(film);
+        if (film.getRatingMpa() == null) {
+            film.setRatingMpa(customRatingMpa());
+        } else {
+            RatingMpa ratingMpa = filmDao.getRatingMpaById(film.getRatingMpa().getId());
+            film.setRatingMpa(ratingMpa);
+        }
 
-        Film createFilm = filmDao.create(createNewFilm(film));
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            List<Genre> sortedGenres = new ArrayList<>();
+            for (Genre genre : film.getGenres()) {
+                Genre findGenre = filmDao.getGenresById(genre.getId());
+                sortedGenres.add(findGenre);
+            }
+            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
+            film.setGenres(new LinkedHashSet<>(sortedGenres));
+        } else {
+            film.setGenres(new HashSet<>());
+        }
+
+        if (film.getLikes() == null || film.getLikes().isEmpty()) {
+            film.setLikes(new HashSet<>());
+        }
+
+        Film newFilm = Film.builder()
+                .name(film.getName())
+                .description(film.getDescription())
+                .releaseDate(film.getReleaseDate())
+                .duration(film.getDuration())
+                .ratingMpa(film.getRatingMpa())
+                .build();
+
+        Film createFilm = filmDao.create(newFilm);
+
+        for (Genre genre : film.getGenres()) {
+            filmDao.addLinkFilmGenres(createFilm.getId(), genre.getId());
+        }
         createFilm.setGenres(film.getGenres());
+
+        for (Like like : film.getLikes()) {
+            filmDao.addLikes(createFilm.getId(), like.getUserId());
+        }
         createFilm.setLikes(film.getLikes());
-        addLinkFilmGenresAndLikes(createFilm);
+
+
 
         log.info("Фильм {} успешно создан", createFilm.getName());
         return createFilm;
@@ -133,7 +170,28 @@ public class FilmService {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 
-        filmSetGenreLikesRating(newFilm);
+        if (newFilm.getRatingMpa() == null) {
+            newFilm.setRatingMpa(customRatingMpa());
+        } else {
+            RatingMpa ratingMpa = filmDao.getRatingMpaById(newFilm.getRatingMpa().getId());
+            newFilm.setRatingMpa(ratingMpa);
+        }
+
+        if (newFilm.getGenres() != null && !newFilm.getGenres().isEmpty()) {
+            List<Genre> sortedGenres = new ArrayList<>();
+            for (Genre genre : newFilm.getGenres()) {
+                Genre findGenre = filmDao.getGenresById(genre.getId());
+                sortedGenres.add(findGenre);
+            }
+            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
+            newFilm.setGenres(new LinkedHashSet<>(sortedGenres));
+        } else {
+            newFilm.setGenres(new HashSet<>());
+        }
+
+        if (newFilm.getLikes() == null || newFilm.getLikes().isEmpty()) {
+            newFilm.setLikes(new HashSet<>());
+        }
 
         Film oldFilm = filmDao.getFilmById(newFilm.getId());
         oldFilm.setId(newFilm.getId());
@@ -144,12 +202,18 @@ public class FilmService {
         oldFilm.setRatingMpa(newFilm.getRatingMpa());
 
         Film updateFilm = filmDao.update(oldFilm);
-        filmDao.delLinkFilmGenres(oldFilm.getId());
-        filmDao.delAllLikes(oldFilm.getId());
 
+        filmDao.delLinkFilmGenres(oldFilm.getId());
+        for (Genre genre : newFilm.getGenres()) {
+            filmDao.addLinkFilmGenres(updateFilm.getId(), genre.getId());
+        }
         updateFilm.setGenres(newFilm.getGenres());
+
+        filmDao.delAllLikes(newFilm.getId());
+        for (Like like : newFilm.getLikes()) {
+            filmDao.addLikes(updateFilm.getId(), like.getUserId());
+        }
         updateFilm.setLikes(newFilm.getLikes());
-        addLinkFilmGenresAndLikes(updateFilm);
 
         log.info("Фильм с id = {} успешно обновлён", updateFilm.getId());
         return updateFilm;
@@ -192,10 +256,7 @@ public class FilmService {
             throw new ValidationException("Пользователь уже поставил лайк");
         }
 
-        List<Long> userIds = new ArrayList<>();
-        userIds.add(userId);
-
-        filmDao.addLikes(filmId, userIds);
+        filmDao.addLikes(filmId, userId);
         log.info("Лайк успешно добавлен");
     }
 
@@ -221,59 +282,11 @@ public class FilmService {
         log.info("Лайк успешно удален");
     }
 
-    private Set<Genre> sortedGenre(Film film) {
-        Set<Genre> result = filmDao.getGenres().stream()
-                .filter(film.getGenres()::contains)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        if (result.isEmpty()) {
-            throw new NotFoundException("Жанры для фильма не найдены: " + film.getGenres());
-        }
-
-        return result;
-    }
-
     private RatingMpa customRatingMpa() {
         return RatingMpa.builder()
                 .id(1L)
                 .name("G")
                 .build();
-    }
-
-    private Film createNewFilm(Film film) {
-        return Film.builder()
-                .name(film.getName())
-                .description(film.getDescription())
-                .releaseDate(film.getReleaseDate())
-                .duration(film.getDuration())
-                .ratingMpa(film.getRatingMpa())
-                .build();
-    }
-
-    private void filmSetGenreLikesRating(Film film) {
-        film.setRatingMpa(
-                Optional.ofNullable(film.getRatingMpa())
-                        .map(r -> filmDao.getRatingMpaById(r.getId()))
-                        .orElseGet(this::customRatingMpa)
-        );
-
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            Set<Genre> sortedGenres = sortedGenre(film);
-            film.setGenres(new LinkedHashSet<>(sortedGenres));
-        } else {
-            film.setGenres(new HashSet<>());
-        }
-
-        if (film.getLikes() == null || film.getLikes().isEmpty()) {
-            film.setLikes(new HashSet<>());
-        }
-    }
-
-    private void addLinkFilmGenresAndLikes(Film film) {
-        List<Long> genreIds = film.getGenres().stream().map(Genre::getId).toList();
-        List<Long> userIds = film.getLikes().stream().map(Like::getUserId).toList();
-        filmDao.addLinkFilmGenres(film.getId(), genreIds);
-        filmDao.addLikes(film.getId(), userIds);
     }
 }
 
