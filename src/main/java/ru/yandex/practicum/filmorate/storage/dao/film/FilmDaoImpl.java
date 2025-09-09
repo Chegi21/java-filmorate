@@ -42,35 +42,50 @@ public class FilmDaoImpl implements FilmDao {
                             .description(rs.getString(FILM_DESCRIPTION))
                             .duration(rs.getInt(FILM_DURATION))
                             .releaseDate(rs.getDate(FILM_RELEASE_DATE).toLocalDate())
+                            .genres(new HashSet<>())
+                            .likes(new HashSet<>())
                             .build();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-
             });
 
-            RatingMpa ratingMpa = RatingMpa.builder()
-                    .id(rs.getLong(RATING_ID))
-                    .name(rs.getString(RATING_NAME))
-                    .build();
-            film.setRatingMpa(ratingMpa);
+            long ratingId = rs.getLong(RATING_ID);
+            String ratingName = rs.getString(RATING_NAME);
+            if (ratingId > 0 && ratingName != null) {
+                RatingMpa ratingMpa = RatingMpa.builder()
+                        .id(ratingId)
+                        .name(ratingName)
+                        .build();
+                film.setRatingMpa(ratingMpa);
+            }
 
-            Genre genre = Genre.builder()
-                    .id(rs.getLong(GENRE_ID))
-                    .name(rs.getString(GENRE_NAME))
-                    .build();
-            film.getGenres().add(genre);
+            long genreId = rs.getLong(GENRE_ID);
+            String genreName = rs.getString(GENRE_NAME);
+            if (genreId > 0 && genreName != null) {
+                Genre genre = Genre.builder()
+                        .id(genreId)
+                        .name(genreName)
+                        .build();
+                film.getGenres().add(genre);
+            }
 
-            Like like = Like.builder()
-                    .filmId(rs.getLong(LIKES_FILM_ID))
-                    .userId(rs.getLong(LIKES_USER_ID))
-                    .build();
-
-            film.getLikes().add(like);
+            Long likeUserId = rs.getLong(LIKES_USER_ID);
+            Long likeFilmId = rs.getLong(LIKES_FILM_ID);
+            if (likeUserId > 0 && likeFilmId.equals(film.getId())) {
+                Like like = Like.builder()
+                        .filmId(likeFilmId)
+                        .userId(likeUserId)
+                        .build();
+                film.getLikes().add(like);
+            } else {
+                log.warn("Пропущена запись лайка: filmId={}, userId={}", likeFilmId, likeUserId);
+            }
         });
 
         return new ArrayList<>(filmMap.values());
     }
+
 
     @Override
     public Collection<Film> getPopular(Integer count) {
