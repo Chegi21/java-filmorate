@@ -89,10 +89,12 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Collection<Film> getPopular(Integer count) {
-        return getFilms().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        List<Film> films = jdbcTemplate.query(FIND_POPULAR_FILM, new FilmMapper(), count);
+        for (Film film : films) {
+            film.setGenres(new HashSet<>(getGenresByFilmId(film.getId())));
+            film.setLikes(new HashSet<>(getLikesByFilmId(film.getId())));
+        }
+        return films;
     }
 
     @Override
