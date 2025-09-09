@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -10,15 +11,14 @@ import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static ru.yandex.practicum.filmorate.storage.constants.FriendDbConstants.*;
 import static ru.yandex.practicum.filmorate.storage.constants.UserDbConstants.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Repository("userDaoImpl")
 public class UserDaoImpl implements UserDao {
@@ -26,12 +26,36 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Collection<User> getUsers() {
-        List<User> users = jdbcTemplate.query(FIND_ALL_USER, new UserMapper());
-        for (User user : users) {
-            user.setFriends(new HashSet<>(getFriendsId(user.getId())));
-        }
-        return users;
+        Map<Long, User> userMap = new HashMap<>();
+
+        jdbcTemplate.query(FIND_ALL_USER, rs -> {
+            Long userId = rs.getLong(USER_ID);
+            User user = userMap.computeIfAbsent(userId, id -> {
+                try {
+                    return User.builder()
+                            .id(id)
+                            .email(rs.getString(USER_EMAIL))
+                            .login(rs.getString(USER_LOGIN))
+                            .name((rs.getString(USER_NAME)))
+                            .birthday(rs.getDate(USER_BIRTHDAY).toLocalDate())
+                            .friends(new HashSet<>())
+                            .build();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            Long friendId = rs.getLong(FRIEND_FRIEND_ID);
+            if (friendId > 0 && !friendId.equals(userId)) {
+                user.getFriends().add(friendId);
+            } else {
+                log.warn("Запись или связь дружбы отсутствует в базе данных: userId={}, friendId={}", userId, friendId);
+            }
+        });
+
+        return new ArrayList<>(userMap.values());
     }
+
 
     @Override
     public Collection<User> getFriends(Long userId) {

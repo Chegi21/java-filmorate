@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.constants;
 
+import static ru.yandex.practicum.filmorate.storage.constants.FriendDbConstants.*;
+
 public class UserDbConstants {
     public static final String USER_TABLE_NAME = "users";
 
@@ -13,7 +15,19 @@ public class UserDbConstants {
 
     public static final String USER_BIRTHDAY = "birthday";
 
-    public static final String FIND_ALL_USER = "SELECT * FROM " + USER_TABLE_NAME;
+    public static final String FIND_ALL_USER =
+            "SELECT " +
+                    "u." + USER_ID + ", " +
+                    "u." + USER_EMAIL + ", " +
+                    "u." + USER_LOGIN + ", " +
+                    "u." + USER_NAME + ", " +
+                    "u." + USER_BIRTHDAY + ", " +
+                    "f." + FRIEND_FRIEND_ID + " " +
+                    "FROM " + USER_TABLE_NAME + " u " +
+                    "LEFT JOIN " + FRIEND_TABLE_NAME +
+                    " f ON u." + USER_ID + " = f." + FRIEND_USER_ID + " " +
+                    "ORDER BY u." + USER_ID;
+
 
     public static final String FIND_USER_BY_ID = "SELECT * FROM " + USER_TABLE_NAME + " WHERE " + USER_ID + " = ?";
 

@@ -117,10 +117,21 @@ public class FilmService {
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             List<Genre> sortedGenres = new ArrayList<>();
+            List<Genre> listAllGenre = filmDao.getGenres().stream().toList();
+
             for (Genre genre : film.getGenres()) {
-                Genre findGenre = filmDao.getGenresById(genre.getId());
-                sortedGenres.add(findGenre);
+                listAllGenre.stream()
+                        .filter(g -> g.getId().equals(genre.getId()))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                sortedGenres::add,
+                                () -> {
+                                    log.warn("Жанр с id = {} не найден", genre.getId());
+                                    throw new NotFoundException("Жанр не найден");
+                                }
+                        );
             }
+
             sortedGenres.sort(Comparator.comparingLong(Genre::getId));
             film.setGenres(new LinkedHashSet<>(sortedGenres));
         } else {
