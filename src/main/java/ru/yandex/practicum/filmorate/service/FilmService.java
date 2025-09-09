@@ -248,12 +248,11 @@ public class FilmService {
     }
 
     private void setRatingGenresLikes(Film film) {
-        if (film.getRatingMpa() == null) {
-            film.setRatingMpa(customRatingMpa());
-        } else {
-            RatingMpa ratingMpa = filmDao.getRatingMpaById(film.getRatingMpa().getId());
-            film.setRatingMpa(ratingMpa);
-        }
+        film.setRatingMpa(
+                Optional.ofNullable(film.getRatingMpa())
+                        .map(r -> filmDao.getRatingMpaById(r.getId()))
+                        .orElseGet(this::customRatingMpa)
+        );
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             List<Genre> sortedGenres = new ArrayList<>();
