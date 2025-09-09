@@ -10,16 +10,17 @@ import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.mapper.*;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.storage.constants.FilmDbConstants.*;
 import static ru.yandex.practicum.filmorate.storage.constants.FilmGenreDbConstant.DELETE_FILM_GENRE;
 import static ru.yandex.practicum.filmorate.storage.constants.FilmGenreDbConstant.INSERT_FILM_GENRE;
 import static ru.yandex.practicum.filmorate.storage.constants.GenreDbConstants.*;
 import static ru.yandex.practicum.filmorate.storage.constants.LikesDbConstants.*;
-import static ru.yandex.practicum.filmorate.storage.constants.RatingMpaConstants.FIND_ALL_RATINGS;
-import static ru.yandex.practicum.filmorate.storage.constants.RatingMpaConstants.FIND_RATING;
+import static ru.yandex.practicum.filmorate.storage.constants.RatingMpaConstants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,22 +30,54 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Collection<Film> getFilms() {
-        List<Film> films =  jdbcTemplate.query(FIND_ALL_FILM, new FilmMapper());
-        for (Film film : films) {
-            film.setGenres(new HashSet<>(getGenresByFilmId(film.getId())));
-            film.setLikes(new HashSet<>(getLikesByFilmId(film.getId())));
-        }
-        return films;
+        Map<Long, Film> filmMap = new HashMap<>();
+
+        jdbcTemplate.query(FIND_ALL_FILM, rs -> {
+            Long filmId = rs.getLong(FILM_ID);
+            Film film = filmMap.computeIfAbsent(filmId, id -> {
+                try {
+                    return Film.builder()
+                            .id(id)
+                            .name(rs.getString(FILM_NAME))
+                            .description(rs.getString(FILM_DESCRIPTION))
+                            .duration(rs.getInt(FILM_DURATION))
+                            .releaseDate(rs.getDate(FILM_RELEASE_DATE).toLocalDate())
+                            .build();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
+            });
+
+            RatingMpa ratingMpa = RatingMpa.builder()
+                    .id(rs.getLong(RATING_ID))
+                    .name(rs.getString(RATING_NAME))
+                    .build();
+            film.setRatingMpa(ratingMpa);
+
+            Genre genre = Genre.builder()
+                    .id(rs.getLong(GENRE_ID))
+                    .name(rs.getString(GENRE_NAME))
+                    .build();
+            film.getGenres().add(genre);
+
+            Like like = Like.builder()
+                    .filmId(rs.getLong(LIKES_FILM_ID))
+                    .userId(rs.getLong(LIKES_USER_ID))
+                    .build();
+
+            film.getLikes().add(like);
+        });
+
+        return new ArrayList<>(filmMap.values());
     }
 
     @Override
     public Collection<Film> getPopular(Integer count) {
-        List<Film> films = jdbcTemplate.query(FIND_POPULAR_FILM, new FilmMapper(), count);
-        for (Film film : films) {
-            film.setGenres(new HashSet<>(getGenresByFilmId(film.getId())));
-            film.setLikes(new HashSet<>(getLikesByFilmId(film.getId())));
-        }
-        return films;
+        return getFilms().stream()
+                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     @Override
